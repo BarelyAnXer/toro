@@ -4,10 +4,10 @@ import { sequelize } from '../database.js';
 const Product = sequelize.define('Product', {
   name: {
     type: DataTypes.STRING,
-    allowNull: false,
+    // allowNull: false,
   },
   price: {
-    type: DataTypes.NUMBER,
+    type: DataTypes.INTEGER,
   },
 }, {});
 
