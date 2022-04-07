@@ -33,10 +33,45 @@ export const createProduct = createAsyncThunk(
   'product/createProduct',
   async (product, thunkAPI) => {
     try {
-      console.log('PRODUCT', product);
-      const response = await axios.post(API_URL + 'products', {
-        name: 'testName',
-        price: 20,
+      const response = await axios.post(API_URL + 'products', product);
+      return response.data;
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  },
+);
+
+export const deleteProduct = createAsyncThunk(
+  'product/deleteProduct',
+  async (product, thunkAPI) => {
+    try {
+      const response = await axios.delete(API_URL + 'products/' + 18);
+      return response.data;
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  },
+);
+
+export const updateProduct = createAsyncThunk(
+  'product/updateProduct',
+  async (product, thunkAPI) => {
+    try {
+      const response = await axios.put(API_URL + 'products/' + 19, {
+        name: 'zye',
+        price: 11111,
       });
       return response.data;
     } catch (error) {
@@ -61,6 +96,7 @@ export const productSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+    // getProduct
     .addCase(getProducts.pending, (state, action) => {
       state.isLoading = true;
     })
@@ -71,9 +107,9 @@ export const productSlice = createSlice({
     })
     .addCase(getProducts.rejected, (state, action) => {
       state.hasError = true;
-      console.log('ERROR', action.payload);
-      state.message = 'ERROR MESSAGE';
+      state.message = 'errror get ';
     })
+    // createProduct
     .addCase(createProduct.pending, (state, action) => {
       state.isLoading = true;
     })
@@ -85,7 +121,37 @@ export const productSlice = createSlice({
     .addCase(createProduct.rejected, (state, action) => {
       state.hasError = true;
       console.log('ERROR', action.payload);
-      state.message = 'ERROR MESSAGE';
+      state.message = 'error create';
+    })
+    // deleteProduct
+    .addCase(deleteProduct.pending, (state, action) => {
+      state.isLoading = true;
+    })
+    .addCase(deleteProduct.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.isSuccess = true;
+      state.products = state.products.filter(product => {
+        return product.id !== action.payload.id;
+      });
+    })
+    .addCase(deleteProduct.rejected, (state, action) => {
+      state.hasError = true;
+      state.message = 'error deleted';
+    })
+    // updateProduct
+    .addCase(updateProduct.pending, (state, action) => {
+      state.isLoading = true;
+    })
+    .addCase(updateProduct.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.isSuccess = true;
+      state.products = state.products.map(product => {
+        return product.id === action.payload.id ? action.payload : product;
+      });
+    })
+    .addCase(updateProduct.rejected, (state, action) => {
+      state.hasError = true;
+      state.message = 'error update';
     });
 
   },

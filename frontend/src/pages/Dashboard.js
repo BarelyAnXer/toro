@@ -1,7 +1,13 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import { createProduct, getProducts, reset } from '../redux/productSlice';
+import {
+  createProduct,
+  deleteProduct,
+  getProducts,
+  reset,
+  updateProduct,
+} from '../redux/productSlice';
 
 function Dashboard() {
 
@@ -47,6 +53,16 @@ function Dashboard() {
       }}>create
       </button>
 
+      <button onClick={() => {
+        dispatch(deleteProduct());
+      }}>delete
+      </button>
+
+      <button onClick={() => {
+        dispatch(updateProduct());
+      }}>update
+      </button>
+
 
       <section className="heading">
         {/* <h1>Welcome {user && user.name}</h1> */}
@@ -63,6 +79,7 @@ function Dashboard() {
           {products.map(product => {
             return (
               <tr key={product.id}>
+                <th>{product.id}</th>
                 <th>{product.name}</th>
                 <th>{product.price}</th>
               </tr>

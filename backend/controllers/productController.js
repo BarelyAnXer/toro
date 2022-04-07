@@ -11,7 +11,7 @@ export async function readAllProduct(request, response) {
 export async function readOneProduct(request, response) {
   const { id } = request.params;
 
-  const product = await Product.findAll({
+  const product = await Product.findOne({
     where: {
       id: id,
     },
@@ -41,20 +41,31 @@ export async function deleteOneProduct(request, response) {
       id: id,
     },
   });
+
   response.status(200)
-  .send({ id });
+  .send({ id: parseInt(id) });
 }
 
 export async function updateOneProduct(request, response) {
+  const {
+    name,
+    price,
+  } = request.body;
+
   const { id } = request.params;
-  const updatedProduct = await Product.update({
-    name: 'name',
-    price: 13,
+  await Product.update({
+    name,
+    price,
   }, {
     where: {
       id: id,
     },
-    returning: true,
+  });
+
+  const updatedProduct = await Product.findOne({
+    where: {
+      id: id,
+    },
   });
 
   response.status(200)
