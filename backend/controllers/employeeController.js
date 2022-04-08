@@ -1,5 +1,6 @@
 import Employee from '../model/employeeModel.js';
 import PayRoll from '../model/payrollModel.js';
+import moment from 'moment';
 
 export async function saveEmployee(request, response) {
   const {
@@ -21,7 +22,7 @@ export async function saveEmployee(request, response) {
   });
 
   response.status(200)
-  .json(employee);
+  .json({ employee: employee });
 }
 
 export async function getEmployeeByID(request, response) {
@@ -33,6 +34,10 @@ export async function getEmployeeByID(request, response) {
     },
   });
 
+  if (employee === null) {
+    return response.sendStatus(404);
+  }
+
   response.status(200)
   .send({ employee: employee });
 }
@@ -41,11 +46,22 @@ export async function listEmployees(request, response) {
   const employees = await Employee.findAll();
 
   response.status(200)
-  .send({ account: employees });
+  .send({ employee: employees });
 }
 
 export async function deleteEmployeeByID(request, response) {
   const { id } = request.params;
+
+  const employee = await Employee.findOne({
+    where: {
+      id: id,
+    },
+  });
+
+  if (employee === null) {
+    return response.sendStatus(404);
+  }
+
   const deletedID = await Employee.destroy({
     where: {
       id: id,
@@ -66,6 +82,16 @@ export async function updateEmployeeByID(request, response) {
   } = request.body;
 
   const { id } = request.params;
+
+  const employee = await Employee.findOne({
+    where: {
+      id: id,
+    },
+  });
+
+  if (employee === null) {
+    return response.sendStatus(404);
+  }
 
   await Employee.update({
     firstName,
@@ -156,14 +182,18 @@ export async function calculatePayrollByStartAndEndDate(request, response) {
 
   const hourlyRate = employee.hourlyRate;
   const overtimeHours = overtime * 1.5;
-  const leaveHours = 0;
-  const overtimeAndHolidayHours = 0;
-  const holidayHoursAndOvertimeHours = 0;
+  // const leaveHours = 0;
+  // const overtimeAndHolidayHours = 0;
+  // const holidayHoursAndOvertimeHours = 0;
 
-  const salary = daysWorked * overtimeHours * hourlyRate;
+  const salary = (hoursWorkedFinal) * overtimeHours * hourlyRate;
 
   response.status(200)
-  .send({ salary: payrolls });
+  .send({
+    payroll: {
+      salary: salary,
+    },
+  });
 }
 
 export async function userTimeInWithDateAndTime(request, response) {
@@ -259,13 +289,46 @@ export async function userTimeOutWithDateAndTime(request, response) {
 }
 
 export async function markEmployeeLeave(request, response) {
+  const { id } = request.params;
   const {
     markDate,
     type,
   } = request.body;
 
-  response.status(200)
-  .send('leave');
+  const employee = await Employee.findOne({
+    where: {
+      id: id,
+    },
+  });
+
+  if (employee === null) {
+    return response.sendStatus(404);
+  }
+
+  if (moment(markDate, 'MM/dd/yyyy')
+  .isValid()) {
+    if (type === 'sick') {
+      await Employee.decrement('sickLeaveCredits', {
+        by: 1,
+        where: { id: id },
+      });
+    } else {
+      await Employee.decrement('vacationLeaveCredits', {
+        by: 1,
+        where: { id: id },
+      });
+    }
+
+    const updatedEmployee = await Employee.findOne({
+      where: { id: id },
+    });
+
+    return response.status(200)
+    .send({ employee: updatedEmployee });
+  } else {
+    console.log('here');
+    return response.sendStatus(400);
+  }
 }
 
 const Holidays = [

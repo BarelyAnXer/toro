@@ -10,9 +10,8 @@ export async function createAccount(request, response) {
     password,
     clearanceLevel,
   } = request.body;
-  console.log(request.body, 'Request Body');
 
-  const employee = await Account.create({
+  const account = await Account.create({
     firstName,
     lastName,
     email,
@@ -21,7 +20,7 @@ export async function createAccount(request, response) {
   });
 
   response.status(200)
-  .json(employee);
+  .json({ account: account });
 }
 
 export async function deleteAccountByID(request, response) {
@@ -32,8 +31,13 @@ export async function deleteAccountByID(request, response) {
     },
   });
 
-  response.status(200)
-  .send('success');
+  console.log(deletedID);
+
+  if (deletedID === 0) {
+    return response.sendStatus(400);
+  }
+
+  response.sendStatus(200);
 }
 
 export async function getAccountByID(request, response) {
@@ -44,6 +48,12 @@ export async function getAccountByID(request, response) {
       id: id,
     },
   });
+
+  console.log(account);
+
+  if (account === null) {
+    return response.sendStatus(400);
+  }
 
   response.status(200)
   .send({ account: account });
@@ -66,6 +76,16 @@ export async function updateAccountByID(request, response) {
   } = request.body;
 
   const { id } = request.params;
+
+  const account = await Account.findOne({
+    where: {
+      id: id,
+    },
+  });
+
+  if (account === null) {
+    return response.sendStatus(400);
+  }
 
   await Account.update({
     firstName,
