@@ -8,14 +8,17 @@ const Employee = sequelize.define('Employee', {
   lastName: {
     type: DataTypes.STRING,
   },
-  email: {
+  position: {
     type: DataTypes.STRING,
   },
-  password: {
-    type: DataTypes.STRING,
+  sickLeaveCredits: {
+    type: DataTypes.INTEGER,
   },
-  clearanceLevel: {
-    type: DataTypes.STRING,
+  vacationLeaveCredits: {
+    type: DataTypes.INTEGER,
+  },
+  hourlyRate: {
+    type: DataTypes.INTEGER,
   },
 }, {});
 
