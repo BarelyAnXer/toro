@@ -123,17 +123,44 @@ export async function calculatePayrollByStartAndEndDate(request, response) {
     },
   });
 
+  let hoursWorked = 0;
+  let minWorked = 0;
+  let overtime = 0;
   for (let i = 0; i < payrolls.length; i++) {
     console.log(payrolls[i].timeInDate, payrolls[i].timeOutDate);
+
+    let timeStart = new Date(payrolls[i].timeInDate).getTime();
+    let timeEnd = new Date(payrolls[i].timeOutDate).getTime();
+    let hourDiff = timeEnd - timeStart; //in ms
+    let secDiff = hourDiff / 1000; //in s
+    let minDiff = hourDiff / 60 / 1000; //in minutes
+    let hDiff = hourDiff / 3600 / 1000; //in hours
+    let humanReadable = {};
+    humanReadable.hours = Math.floor(hDiff);
+    humanReadable.minutes = minDiff - 60 * humanReadable.hours;
+
+    console.log(humanReadable.hours, humanReadable.minutes);
+    if (humanReadable.hours > 8) {
+      overtime = overtime + ((humanReadable.hours - 8) + humanReadable.minutes / 60);
+    }
+
+    hoursWorked = hoursWorked + humanReadable.hours;
+    minWorked = minWorked + humanReadable.minutes;
+
   }
 
+  console.log(hoursWorked, minWorked, overtime);
+
+  const minWorkedToDecimal = minWorked / 60;
+  const hoursWorkedFinal = minWorkedToDecimal + hoursWorked;
+
   const hourlyRate = employee.hourlyRate;
-  const normalHours = 0;
+  const overtimeHours = overtime * 1.5;
   const leaveHours = 0;
   const overtimeAndHolidayHours = 0;
   const holidayHoursAndOvertimeHours = 0;
 
-  const salary = daysWorked * hourlyRate;
+  const salary = daysWorked * overtimeHours * hourlyRate;
 
   response.status(200)
   .send({ salary: payrolls });
